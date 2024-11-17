@@ -1,2 +1,3 @@
 /build
 /main/flac/*
+!/main/flac/*.md
