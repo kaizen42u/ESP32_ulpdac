@@ -457,7 +457,7 @@ static inline void fx_mem_zero_aligned(void *mem, uint32_t size) {
  ******************************************************************************/
 
 /******************************************************************************
- * Enums and constants defined in the FLAC format specifiction                *
+ * Enums and constants defined in the FLAC format specification                *
  ******************************************************************************/
 
 /**
@@ -1154,7 +1154,7 @@ static bool _fx_flac_handle_err(fx_flac_t *inst) {
 		return false;
 	}
 
-	/* Otherwise just try to re-synchronise with the stream by searching for the
+	/* Otherwise just try to re-synchronize with the stream by searching for the
 	   next frame */
 	inst->state = FLAC_SEARCH_FRAME;
 	inst->priv_state = FLAC_FRAME_SYNC;
@@ -1310,7 +1310,7 @@ static bool _fx_flac_process_search_frame(fx_flac_t *inst) {
 	fx_flac_streaminfo_t *si = inst->streaminfo;
 	switch (inst->priv_state) {
 		case FLAC_FRAME_SYNC:
-			/* Synchronise with the underlying bytestream */
+			/* Synchronize with the underlying bytestream */
 			SYNC_BYTESTREAM();
 
 			ENSURE_BITS(15U);
@@ -1596,7 +1596,7 @@ static bool _fx_flac_process_in_frame(fx_flac_t *inst) {
 			/* Compute the number of samples to read */
 			inst->partition_sample = blk_n >> sfh->rice_partition_order;
 			if (inst->partition_cur == 0U) {
-				/* First partition alread includes verbatim samples */
+				/* First partition already includes verbatim samples */
 				if (inst->partition_sample < sfh->order) {
 					return _fx_flac_handle_err(
 					    inst); /* Number of samples is negative */
@@ -1693,7 +1693,7 @@ static bool _fx_flac_process_in_frame(fx_flac_t *inst) {
 				break;
 			}
 
-			/* Synchronise with the underlying byte stream */
+			/* Synchronize with the underlying byte stream */
 			SYNC_BYTESTREAM_CRC();
 
 			/* Read the CRC16 sum, resync if it doesn't match our own */

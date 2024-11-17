@@ -284,7 +284,7 @@ extern "C"
 	 * @param out_len is a pointer at an integer containing the number of available
 	 * signed 32-bit integers at the memory address pointed at by out. After the
 	 * function returns, this value will contain the number of samples that were
-	 * written. If this is NULL, the deocder will silently discard the output.
+	 * written. If this is NULL, the decoder will silently discard the output.
 	 * @return the current state of the decoder. If the state transitions to
 	 * FLAC_END_OF_METADATA, FLAC_END_OF_FRAME or FLAC_END_OF_STREAM this function
 	 * will return immediately; only the data up to the point causing the transition
