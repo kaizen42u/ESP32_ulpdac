@@ -15,9 +15,13 @@
 
 #include "ulpSound.h"
 #include "flacPlayer.h"
-#include "flac/nine_point_eight44100.h"
+#include "flac/fbi_openup44100.h"
 
 static const char *TAG = "main";
+
+#define MIX2018_NOT_ENABLE_GPIO_NUM (GPIO_NUM_26)
+#define TOUCH_THRESHOLD_MIN (200)
+#define TOUCH_THRESHOLD_DYNAMIC_FACTOR (0.75f)
 
 ulp_sound_t ulp;
 flac_player_t flac_player;
@@ -51,12 +55,12 @@ void set_amplifier_enable(bool enable)
 {
 	if (true == enable)
 	{
-		ESP_ERROR_CHECK(gpio_set_level(GPIO_NUM_26, 0));
+		ESP_ERROR_CHECK(gpio_set_level(MIX2018_NOT_ENABLE_GPIO_NUM, 0));
 		ESP_ERROR_CHECK(dac_output_enable(DAC_CHAN_0));
 	}
 	else
 	{
-		ESP_ERROR_CHECK(gpio_set_level(GPIO_NUM_26, 1));
+		ESP_ERROR_CHECK(gpio_set_level(MIX2018_NOT_ENABLE_GPIO_NUM, 1));
 		ESP_ERROR_CHECK(dac_output_disable(DAC_CHAN_0));
 	}
 }
@@ -64,17 +68,16 @@ void set_amplifier_enable(bool enable)
 void enter_deep_sleep()
 {
 	ESP_LOGI(TAG, "Deep sleep start");
-	set_amplifier_enable(false);
 	esp_deep_sleep_start();
 }
 
 void app_main(void)
 {
 	// GPIO26 used for MIX2018 EN, Active LOW
-	ESP_ERROR_CHECK(gpio_sleep_set_pull_mode(GPIO_NUM_26, GPIO_PULLUP_ONLY));
-	ESP_ERROR_CHECK(gpio_pullup_en(GPIO_NUM_26));
-	ESP_ERROR_CHECK(gpio_set_level(GPIO_NUM_26, 1));
-	ESP_ERROR_CHECK(gpio_set_direction(GPIO_NUM_26, GPIO_MODE_OUTPUT));
+	ESP_ERROR_CHECK(gpio_sleep_set_pull_mode(MIX2018_NOT_ENABLE_GPIO_NUM, GPIO_PULLUP_ONLY));
+	ESP_ERROR_CHECK(gpio_pullup_en(MIX2018_NOT_ENABLE_GPIO_NUM));
+	ESP_ERROR_CHECK(gpio_set_level(MIX2018_NOT_ENABLE_GPIO_NUM, 1));
+	ESP_ERROR_CHECK(gpio_set_direction(MIX2018_NOT_ENABLE_GPIO_NUM, GPIO_MODE_OUTPUT));
 
 	// GPIO2 used for on board status LED, BLUE
 	ESP_ERROR_CHECK(gpio_set_level(GPIO_NUM_2, 1));
@@ -91,9 +94,17 @@ void app_main(void)
 
 	// Calculate touch threshold dynamically to accommodate variance in touch regions
 	uint16_t touch_value;
-	ESP_ERROR_CHECK(touch_pad_read(TOUCH_PAD_NUM7, &touch_value));
+	esp_err_t ret = touch_pad_read(TOUCH_PAD_NUM7, &touch_value);
+	if (ret != ESP_ERR_INVALID_STATE) // We will exclude this error code
+		ESP_ERROR_CHECK(ret);
 	ESP_LOGI(TAG, "touch pad [%d] val is %d", TOUCH_PAD_NUM7, touch_value);
-	ESP_ERROR_CHECK(touch_pad_set_thresh(TOUCH_PAD_NUM7, touch_value * 2 / 3));
+
+	uint16_t touch_threshold = touch_value * TOUCH_THRESHOLD_DYNAMIC_FACTOR;
+	if (touch_threshold < TOUCH_THRESHOLD_MIN)
+		touch_threshold = TOUCH_THRESHOLD_MIN;
+	ESP_ERROR_CHECK(touch_pad_set_thresh(TOUCH_PAD_NUM7, touch_threshold));
+	ESP_ERROR_CHECK(touch_pad_get_thresh(TOUCH_PAD_NUM7, &touch_threshold));
+	ESP_LOGI(TAG, "touch pad [%d] thresh is %d", TOUCH_PAD_NUM7, touch_threshold);
 
 	// Assign TouchPad7 trigger to SET1
 	ESP_ERROR_CHECK(touch_pad_set_group_mask(1 << TOUCH_PAD_NUM7, 0, 1 << TOUCH_PAD_NUM7));
@@ -124,6 +135,7 @@ void app_main(void)
 			vTaskDelay(pdMS_TO_TICKS(10));
 		}
 		vTaskDelay(pdMS_TO_TICKS(100));
+		set_amplifier_enable(false);
 		enter_deep_sleep();
 	}
 }

@@ -31,7 +31,9 @@
         "rtc.h": "c",
         "esp_log.h": "c",
         "charconv": "c",
-        "task.h": "c"
+        "task.h": "c",
+        "stdio.h": "c",
+        "stdlib.h": "c"
     },
     "cSpell.words": [
         "accu",
@@ -68,6 +70,7 @@
         "RSHR",
         "RTCIO",
         "SEEKTABLE",
+        "SIGMADELTA",
         "smpls",
         "Statemachine",
         "Stöckel",

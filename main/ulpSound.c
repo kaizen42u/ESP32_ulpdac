@@ -212,7 +212,7 @@ void ulp_print_status()
 
 	printf("--- ULP DAC MAP \r\n");
 	for (size_t i = ULPSOUND_DAC_MAP_START; i <= ULPSOUND_DAC_MAP_STOP; i += 2)
-		printf("[%p]: 0x%08lX (write %03lu to dac1) 0x%08lX (return)\r\n", RTC_SLOW_MEM + i, RTC_SLOW_MEM[i], RTC_SLOW_MEM[i] >> 10 & UINT8_MAX, RTC_SLOW_MEM[i + 1]);
+		printf("[%p]: 0x%08lX (write %-3lu) 0x%08lX (return)\r\n", RTC_SLOW_MEM + i, RTC_SLOW_MEM[i], RTC_SLOW_MEM[i] >> 10 & UINT8_MAX, RTC_SLOW_MEM[i + 1]);
 }
 
 void ulp_print_mem(const void *ptr, size_t len)
